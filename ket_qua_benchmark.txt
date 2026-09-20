@@ -1,0 +1,43 @@
+Loaded 22 chunks
+
+Q1: Sau khi mở yêu cầu đổi trả mà vấn đề chưa được giải quyết, người mua phải chờ bao nhiêu ngày làm việc trước khi yêu cầu eBay can thiệp?
+Gold: Hơn 3 ngày làm việc kể từ khi mở yêu cầu; hàng hoàn đã giao hơn 2 ngày mà chưa hoàn tiền cũng có thể yêu cầu hỗ trợ.
+1. buyer-ask-ebay-to-step-in score=0.584
+2. buyer-ask-ebay-to-step-in score=0.387
+3. buyer-ask-ebay-to-step-in score=0.285
+Hit@3: YES
+Agent: Theo nguồn [1]: ## Khi nào đủ điều kiện Người mua có thể yêu cầu eBay can thiệp khi đã hơn 3 ngày làm việc kể từ lúc mở yêu cầu đổi trả hoặc báo chưa nhận được hàng mà vấn đề vẫn chưa được giải quyết. Nếu theo dõi vận chuyển cho thấy hàng hoàn đã đến người bán hơn 2 ngày làm việc nhưng chưa được hoàn tiền, người mua cũng có thể yêu cầu hỗ trợ.
+
+Q2: Người bán có bao nhiêu ngày làm việc để phản hồi yêu cầu đổi trả?
+Gold: Người bán có 3 ngày làm việc để phản hồi và giải quyết yêu cầu.
+1. seller-handle-return-request score=0.576
+2. seller-handle-return-request score=0.361
+3. seller-return-policy-options score=0.337
+Hit@3: YES
+Agent: Theo nguồn [1]: ## Thời hạn phản hồi Khi người mua mở yêu cầu đổi trả, người bán được thông báo qua email và eBay Messages. Người bán có 3 ngày làm việc để phản hồi và giải quyết vấn đề. Nếu không phản hồi, eBay có thể hoàn tiền cho người mua và yêu cầu người bán hoàn trả khoản tiền đó.
+
+Q3: Ai chịu phí vận chuyển hoàn nếu hàng bị hỏng hoặc không đúng mô tả?
+Gold: Người bán chịu phí vận chuyển hoàn, kể cả khi không cung cấp đổi trả miễn phí.
+1. seller-handle-return-request score=0.499
+2. seller-return-shipping score=0.452
+3. seller-return-shipping score=0.268
+Hit@3: YES
+Agent: Theo nguồn [1]: ## Hàng sai, hỏng hoặc không đúng mô tả Nếu người mua nhận sai hàng, hàng hỏng hoặc không đúng mô tả, người bán phải chấp nhận đổi trả theo eBay Money Back Guarantee ngay cả khi listing ghi không chấp nhận đổi trả. Người bán chịu phí gửi trả và hoàn cả phí vận chuyển ban đầu khi hoàn tiền đầy đủ.
+
+Q4: Người bán có thể chọn các thời hạn đổi trả 30 ngày và 60 ngày như thế nào?
+Gold: Có thể chọn người mua trả phí hoặc đổi trả miễn phí cho thời hạn 30 hoặc 60 ngày.
+1. seller-return-policy-options score=0.456
+2. seller-handle-return-request score=0.348
+3. seller-return-policy-options score=0.281
+Hit@3: YES
+Agent: Theo nguồn [1]: ## Các lựa chọn chính sách Người bán phải nêu rõ trong listing có chấp nhận đổi trả hay không, thời hạn bao lâu và ai chịu phí vận chuyển hoàn. Các lựa chọn phổ biến gồm không chấp nhận đổi trả, đổi trả 30 ngày do người mua trả phí, đổi trả miễn phí 30 ngày, đổi trả 60 ngày do người mua trả phí và đổi trả miễn phí 60 ngày.
+
+Q5: Sau khi nhận lại hàng hoàn, người bán phải hoàn tiền trong bao lâu?
+Gold: Thông thường trong vòng 2 ngày làm việc sau khi nhận hàng hoàn.
+1. ebay-money-back-guarantee score=0.492
+2. ebay-money-back-guarantee score=0.371
+3. ebay-money-back-guarantee score=0.290
+Hit@3: YES
+Agent: Theo nguồn [1]: ## Trách nhiệm của người bán Người bán phải phản hồi yêu cầu trong vòng 3 ngày làm việc. Khi hàng hoàn đã được giao lại, người bán thường phải hoàn tiền trong vòng 2 ngày làm việc. Nếu người bán không phản hồi hoặc không hoàn tiền đúng hạn, eBay có thể can thiệp và hoàn tiền thay người bán.
+
+Retrieval score: 10/10 (5/5 Hit@3)

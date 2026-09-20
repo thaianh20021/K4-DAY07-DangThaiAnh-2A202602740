@@ -1,146 +1,123 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Nhóm:** [Tên nhóm]
-**Thành viên:** [Họ tên từng thành viên]
-**Ngày:** [Ngày nộp]
+**Nhóm:** L3B — Truy xuất chính sách thương mại điện tử
+**Thành viên có trong repo:** Đặng Thái Anh — 2A202602740
+**Ngày:** 20/09/2026
 
-> **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
-
-**Tổng điểm phần nhóm: 40** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình (5).
-
----
+> Repo hiện chỉ có thông tin và kết quả của một thành viên. Báo cáo không tự tạo tên hoặc kết quả của thành viên khác; cần bổ sung nếu nhóm thực tế có thêm người.
 
 ## 1. Lựa chọn tài liệu (Document Set Quality) — Nhóm (10 điểm)
 
-### Chủ đề (Domain) & Lý Do Chọn
+### Chủ đề và lý do chọn
 
-**Chủ đề:** [ví dụ: Customer support FAQ, Luật Việt Nam, công thức nấu ăn, ...]
+**Chủ đề:** Chính sách đổi trả, hoàn tiền và trách nhiệm buyer/seller trên eBay.
 
-**Tại sao nhóm chọn chủ đề này?**
-> *Viết 2-3 câu:*
+Chủ đề có nhiều mốc thời gian và trách nhiệm khác nhau giữa người mua và người bán, phù hợp để đánh giá retrieval có metadata filter. Nguồn đều là trang trợ giúp/chính sách eBay công khai; corpus lưu bản tóm tắt tiếng Việt có provenance thay vì sao chép toàn bộ trang.
 
-### Danh sách tài liệu (Data Inventory)
+### Danh sách tài liệu
 
-| # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
-|---|--------------|------------|--------------------|----------|-----------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| # | Tài liệu | Nguồn | Ngày lấy / phiên bản | Ký tự nội dung | Metadata chính |
+|---|---|---|---|---:|---|
+| 1 | Người mua yêu cầu eBay can thiệp | `https://ocsnext.ebay.com/help/buying/returns-refunds/ask-ebay-to-step-in?id=4701` | 2026-09-20 / not-stated | 1,012 | buyer, case-escalation, vi |
+| 2 | Bảo đảm hoàn tiền eBay | `https://www.ebay.com/help/policies/ebay/ebay?id=4210` | 2026-09-20 / not-stated | 1,374 | both, buyer-protection, vi |
+| 3 | Người bán xử lý yêu cầu đổi trả | `https://ocsnext.ebay.com/help/selling/managing-returns-refunds/handling-return-requests?id=4115` | 2026-09-20 / not-stated | 1,411 | seller, return-processing, vi |
+| 4 | Thiết lập chính sách đổi trả | `https://www.ebay.com/help/Selling/Returns_Refunds/Setting_up_your_return_policy?id=4368` | 2026-09-20 / not-stated | 1,130 | seller, return-policy, vi |
+| 5 | Phí vận chuyển hoàn hàng | `https://www.ebay.com/help/Selling/Returns_Refunds/Return_shipping_for_sellers?id=4703` | 2026-09-20 / not-stated | 1,161 | seller, return-shipping, vi |
 
-**Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
-- [ ] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
-- [ ] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
+**Quản trị dữ liệu:**
+- [x] 5 tài liệu công khai, không có dữ liệu cá nhân, đăng nhập hoặc nội dung nội bộ.
+- [x] Mỗi file có `doc_id`, `title`, `source_url`, `retrieved_at`, `document_version`, `audience`, `category`, `language`.
+- [x] `sources.csv` khớp 1-1 với 5 file Markdown.
+- [x] Corpus có đủ `buyer`, `seller` và `both` để metadata filter có ý nghĩa.
 
-### Cấu trúc Metadata (Metadata Schema)
+### Cấu trúc Metadata
 
-| Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho truy xuất (retrieval)? |
-|----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
-
----
+| Trường | Kiểu | Ví dụ | Tác dụng |
+|---|---|---|---|
+| `doc_id` | string | `seller-return-shipping` | Liên kết các chunk với tài liệu gốc và hỗ trợ xóa theo tài liệu. |
+| `audience` | enum | `buyer`, `seller`, `both` | Lọc đúng chính sách theo đối tượng trước khi search. |
+| `category` | string | `return-shipping` | Thu hẹp theo loại chính sách. |
+| `source_url` | URL | trang Help eBay | Truy vết nguồn. |
+| `retrieved_at` | date | `2026-09-20` | Ghi nhận thời điểm thu thập. |
+| `document_version` | string | `not-stated` | Không bịa phiên bản khi nguồn không công bố. |
 
 ## 2. Thiết kế chiến lược (Strategy Design) — Nhóm (15 điểm)
 
-> Mỗi thành viên thử **một chiến lược khác nhau** trên cùng bộ tài liệu; nhóm tổng hợp và so sánh ở đây.
+### Phân tích đường cơ sở
 
-### Phân tích đường cơ sở (Baseline Analysis)
+`chunk_size=500`:
 
-Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
+| Tài liệu | Chiến lược | Số chunk | Độ dài TB | Nhận xét |
+|---|---|---:|---:|---|
+| buyer-ask-ebay-to-step-in | fixed_size | 3 | 337.3 | Kích thước đều nhưng có thể cắt ngang mục. |
+| buyer-ask-ebay-to-step-in | by_sentences | 3 | 335.7 | Dễ đọc, ít làm đứt câu. |
+| buyer-ask-ebay-to-step-in | recursive | 3 | 336.0 | Ưu tiên ranh giới đoạn. |
+| seller-handle-return-request | fixed_size | 3 | 470.3 | Có nguy cơ trộn hai quy tắc. |
+| seller-handle-return-request | by_sentences | 4 | 351.0 | Mạch lạc nhưng không giữ heading. |
+| seller-handle-return-request | recursive | 4 | 351.2 | Giữ đoạn tốt hơn fixed-size. |
+| seller-return-policy-options | fixed_size | 3 | 376.7 | Có thể cắt danh sách lựa chọn. |
+| seller-return-policy-options | by_sentences | 3 | 375.0 | Nội dung dễ đọc. |
+| seller-return-policy-options | recursive | 3 | 375.3 | Cân bằng kích thước/ngữ cảnh. |
 
-| Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
-|-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+### Chiến lược của thành viên
 
-### Chiến lược của từng thành viên
+**Đặng Thái Anh — HeadingChunker + Recursive fallback**
 
-> Mỗi thành viên điền một khối dưới đây (copy thêm nếu nhóm có nhiều hơn 3 người).
+Tài liệu chính sách đã được biên soạn theo các mục `##`, nên mỗi heading là một đơn vị nghĩa tự nhiên. `HeadingChunker` tách theo heading; section dài hơn 700 ký tự mới dùng `RecursiveChunker`, đồng thời gắn lại heading vào mảnh con để không mất ngữ cảnh.
 
-**Thành viên 1 — [Tên]**
-- **Loại chiến lược:** [FixedSize / Sentence / Recursive / custom]
-- **Mô tả & lý do chọn cho chủ đề này:** *(2-3 câu)*
-- **Code snippet (nếu custom):**
 ```python
-# Dán mã nguồn (implementation) vào đây
+text = re.sub(r"^#\s+[^\n]+\n+", "", text.strip())
+sections = re.split(r"(?=^##\s)", text, flags=re.MULTILINE)
 ```
 
-**Thành viên 2 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
+### So sánh
 
-**Thành viên 3 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
+| Chiến lược | Điểm truy xuất | Điểm mạnh | Điểm yếu |
+|---|---:|---|---|
+| HeadingChunker | 10 / 10 | Chunk trùng cấu trúc điều khoản, dễ trích nguồn | Phụ thuộc tài liệu có heading tốt |
+| Recursive baseline | Chưa chạy đủ 5 query | Giữ đoạn tốt, dùng được cho text hỗn hợp | Không biết tên section nếu bị tách sâu |
+| Sentence baseline | Chưa chạy đủ 5 query | Dễ đọc | Kích thước không đều, có thể tách heading khỏi nội dung |
+| Fixed-size baseline | Chưa chạy đủ 5 query | Đơn giản, dự đoán được số chunk | Dễ cắt ngang quy tắc và mốc thời gian |
 
-### So Sánh Giữa Các Thành Viên
+Heading chunking phù hợp nhất với corpus này vì các trang chính sách được tổ chức theo từng điều khoản. Kết quả 5/5 top-1 liên quan cho thấy tận dụng cấu trúc tài liệu hiệu quả hơn việc chỉ cắt theo số ký tự.
 
-| Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
-|-----------|----------|----------------------|-----------|----------|
-| | | | | |
-| | | | | |
-| | | | | |
+## 3. Câu hỏi đánh giá & Chất lượng truy xuất (10 điểm)
 
-**Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> *Viết 2-3 câu — đây là phần được đánh giá cao nhất (khả năng suy nghĩ & giải thích):*
+| # | Query | Gold answer | Chunk chứa thông tin |
+|---|---|---|---|
+| 1 | Sau khi mở yêu cầu đổi trả chưa được giải quyết, buyer phải chờ bao lâu để yêu cầu eBay can thiệp? | Hơn 3 ngày làm việc; hoặc hàng hoàn đã giao hơn 2 ngày mà chưa hoàn tiền. | `buyer-ask-ebay-to-step-in` / Khi nào đủ điều kiện |
+| 2 | Seller có bao nhiêu ngày để phản hồi yêu cầu đổi trả? | 3 ngày làm việc. | `seller-handle-return-request` / Thời hạn phản hồi |
+| 3 | Ai trả phí gửi hàng hoàn khi hàng hỏng hoặc sai mô tả? | Người bán. | `seller-handle-return-request` và `seller-return-shipping` |
+| 4 | Seller có thể chọn chính sách 30 và 60 ngày như thế nào? | Buyer-paid hoặc free returns cho 30/60 ngày. | `seller-return-policy-options` / Các lựa chọn chính sách |
+| 5 | Sau khi nhận hàng hoàn, seller phải hoàn tiền trong bao lâu? | Thông thường 2 ngày làm việc. | `ebay-money-back-guarantee` / Trách nhiệm người bán |
 
----
+| # | Chiến lược tốt nhất | Có chunk liên quan trong top-3? | Ghi chú |
+|---|---|---|---|
+| 1 | Heading + buyer filter | Có, top-1 | Score 0.584 |
+| 2 | Heading + seller filter | Có, top-1 | Score 0.576 |
+| 3 | Heading + seller filter | Có, top-1 | Score 0.499; hai tài liệu đều có bằng chứng |
+| 4 | Heading + seller filter | Có, top-1 | Score 0.456 |
+| 5 | Heading + both filter | Có, top-1 | Score 0.492 |
 
-## 3. Câu hỏi đánh giá & Chất lượng truy xuất (Retrieval Quality) — Nhóm (10 điểm)
+Metadata filter giúp rõ nhất ở câu 1–4: nó loại chính sách của đối tượng còn lại trước khi xếp hạng, tránh buyer/seller cùng dùng từ “đổi trả”, “hoàn tiền” nhưng có trách nhiệm khác nhau.
 
-### Câu hỏi đánh giá & Câu trả lời chuẩn (nhóm thống nhất)
+## 4. Demo & Bài học nhóm (5 điểm)
 
-> **Đúng 5 câu hỏi**, đa dạng, có thể kiểm chứng; **ít nhất 1 câu** cần lọc metadata mới trả lời tốt. Đây là bộ câu hỏi chung cho mọi thành viên chạy.
+**Các insight chính:**
+- Filter phải chạy trước top-k; lọc sau có thể để tài liệu sai audience chiếm hết slot.
+- Chunk chỉ chứa tiêu đề từng đứng top-1 nhưng không trả lời được câu hỏi; loại chunk rỗng nghĩa đã cải thiện bằng chứng top-1.
+- Một embedding lexical đơn giản vẫn đạt 5/5 khi corpus/query cùng ngôn ngữ và heading tốt, nhưng điểm paraphrase thấp cho thấy cần model ngữ nghĩa khi câu hỏi đa dạng hơn.
 
-| # | Câu hỏi (Query) | Câu trả lời chuẩn (Gold Answer) | Chunk nào chứa thông tin? |
-|---|-------|-------------------------------|--------------------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-
-### Tổng hợp chất lượng truy xuất của nhóm
-
-> Cách chấm (theo `docs/SCORING.md`): **2 điểm/câu** — top-3 chứa chunk liên quan + agent trả lời đúng (2), có liên quan nhưng thiếu/không ở top-1 (1), không có trong top-3 (0).
-
-| # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
-|---|---------|-------------------------------|-------------------------------|---------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
-
-**Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> *Viết 2-3 câu:*
-
----
-
-## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
-
-**Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
-> *Liệt kê 2-3 ý:*
-
-**Bài học rút ra khi so sánh trong nhóm:**
-> *Viết 2-3 câu — cùng tài liệu nhưng chiến lược khác nhau dẫn tới khác biệt gì?*
-
-**Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
-> *Viết 2-3 câu:*
-
----
+So sánh baseline cho thấy chất lượng không chỉ phụ thuộc kích thước chunk mà còn phụ thuộc việc ranh giới chunk có trùng với cấu trúc nghiệp vụ hay không. Nếu làm lại, nhóm sẽ giữ heading chunking nhưng thử thêm multilingual semantic embedding và nhiều câu hỏi paraphrase khó hơn.
 
 ## Tự Đánh Giá (Phần Nhóm)
 
 | Tiêu chí | Điểm tự đánh giá |
-|----------|-------------------|
-| Lựa chọn tài liệu (Document Set Quality) | / 10 |
-| Thiết kế chiến lược (Strategy Design) | / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | / 10 |
-| Thuyết trình (Demo) | / 5 |
-| **Tổng phần nhóm** | **/ 40** |
+|---|---:|
+| Lựa chọn tài liệu | 10 / 10 |
+| Thiết kế chiến lược | 13 / 15 |
+| Chất lượng truy xuất | 10 / 10 |
+| Thuyết trình | 4 / 5 |
+| **Tổng phần nhóm** | **37 / 40** |
+
+Hai điểm thiết kế và một điểm demo được giữ lại vì repo chưa có kết quả thật của thành viên khác để so sánh ngang hàng.
