@@ -1,18 +1,18 @@
-Loaded 22 chunks
+Loaded 47 chunks
 
 Q1: Sau khi mở yêu cầu đổi trả mà vấn đề chưa được giải quyết, người mua phải chờ bao nhiêu ngày làm việc trước khi yêu cầu eBay can thiệp?
 Gold: Hơn 3 ngày làm việc kể từ khi mở yêu cầu; hàng hoàn đã giao hơn 2 ngày mà chưa hoàn tiền cũng có thể yêu cầu hỗ trợ.
 1. buyer-ask-ebay-to-step-in score=0.584
-2. buyer-ask-ebay-to-step-in score=0.387
-3. buyer-ask-ebay-to-step-in score=0.285
+2. buyer-return-item-refund score=0.410
+3. buyer-return-item-refund score=0.394
 Hit@3: YES
 Agent: Theo nguồn [1]: ## Khi nào đủ điều kiện Người mua có thể yêu cầu eBay can thiệp khi đã hơn 3 ngày làm việc kể từ lúc mở yêu cầu đổi trả hoặc báo chưa nhận được hàng mà vấn đề vẫn chưa được giải quyết. Nếu theo dõi vận chuyển cho thấy hàng hoàn đã đến người bán hơn 2 ngày làm việc nhưng chưa được hoàn tiền, người mua cũng có thể yêu cầu hỗ trợ.
 
 Q2: Người bán có bao nhiêu ngày làm việc để phản hồi yêu cầu đổi trả?
 Gold: Người bán có 3 ngày làm việc để phản hồi và giải quyết yêu cầu.
 1. seller-handle-return-request score=0.576
-2. seller-handle-return-request score=0.361
-3. seller-return-policy-options score=0.337
+2. seller-ask-ebay-to-step-in score=0.371
+3. seller-handle-return-request score=0.361
 Hit@3: YES
 Agent: Theo nguồn [1]: ## Thời hạn phản hồi Khi người mua mở yêu cầu đổi trả, người bán được thông báo qua email và eBay Messages. Người bán có 3 ngày làm việc để phản hồi và giải quyết vấn đề. Nếu không phản hồi, eBay có thể hoàn tiền cho người mua và yêu cầu người bán hoàn trả khoản tiền đó.
 

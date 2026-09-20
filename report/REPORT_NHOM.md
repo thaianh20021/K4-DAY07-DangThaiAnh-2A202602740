@@ -19,15 +19,20 @@ Chủ đề có nhiều mốc thời gian và trách nhiệm khác nhau giữa n
 | # | Tài liệu | Nguồn | Ngày lấy / phiên bản | Ký tự nội dung | Metadata chính |
 |---|---|---|---|---:|---|
 | 1 | Người mua yêu cầu eBay can thiệp | `https://ocsnext.ebay.com/help/buying/returns-refunds/ask-ebay-to-step-in?id=4701` | 2026-09-20 / not-stated | 1,012 | buyer, case-escalation, vi |
-| 2 | Bảo đảm hoàn tiền eBay | `https://www.ebay.com/help/policies/ebay/ebay?id=4210` | 2026-09-20 / not-stated | 1,374 | both, buyer-protection, vi |
-| 3 | Người bán xử lý yêu cầu đổi trả | `https://ocsnext.ebay.com/help/selling/managing-returns-refunds/handling-return-requests?id=4115` | 2026-09-20 / not-stated | 1,411 | seller, return-processing, vi |
-| 4 | Thiết lập chính sách đổi trả | `https://www.ebay.com/help/Selling/Returns_Refunds/Setting_up_your_return_policy?id=4368` | 2026-09-20 / not-stated | 1,130 | seller, return-policy, vi |
-| 5 | Phí vận chuyển hoàn hàng | `https://www.ebay.com/help/Selling/Returns_Refunds/Return_shipping_for_sellers?id=4703` | 2026-09-20 / not-stated | 1,161 | seller, return-shipping, vi |
+| 2 | Người mua trả hàng để nhận hoàn tiền | `https://www.ebay.com/help/buyanl/returns-refunds/return-item-refund?id=4041` | 2026-09-20 / not-stated | 1,545 | buyer, return-process, vi |
+| 3 | Bảo đảm hoàn tiền eBay | `https://www.ebay.com/help/policies/ebay/ebay?id=4210` | 2026-09-20 / not-stated | 1,374 | both, buyer-protection, vi |
+| 4 | Người bán yêu cầu eBay can thiệp | `https://www.ebay.com/help/selling/managing-returns-refunds/ask-ebay-to-step-in?id=4702` | 2026-09-20 / not-stated | 1,265 | seller, case-escalation, vi |
+| 5 | Người bán xử lý yêu cầu đổi trả | `https://ocsnext.ebay.com/help/selling/managing-returns-refunds/handling-return-requests?id=4115` | 2026-09-20 / not-stated | 1,411 | seller, return-processing, vi |
+| 6 | Người bán xử lý tranh chấp thanh toán | `https://www.ebay.com/help/selling/getting-paid/handling-chargebacks?id=4799` | 2026-09-20 / not-stated | 1,256 | seller, payment-dispute, vi |
+| 7 | Bảo vệ người bán trước tranh chấp thanh toán | `https://www.ebay.com/help/policies/selling-policies/payment-est-seller-protections?id=5293` | 2026-09-20 / not-stated | 1,462 | seller, seller-protection, vi |
+| 8 | Người bán hoàn tiền cho người mua | `https://www.ebay.com/help/selling/managing-returns-refunds/refunding-buyers?id=5182` | 2026-09-20 / not-stated | 1,459 | seller, refunds, vi |
+| 9 | Thiết lập chính sách đổi trả | `https://www.ebay.com/help/Selling/Returns_Refunds/Setting_up_your_return_policy?id=4368` | 2026-09-20 / not-stated | 1,130 | seller, return-policy, vi |
+| 10 | Phí vận chuyển hoàn hàng | `https://www.ebay.com/help/Selling/Returns_Refunds/Return_shipping_for_sellers?id=4703` | 2026-09-20 / not-stated | 1,161 | seller, return-shipping, vi |
 
 **Quản trị dữ liệu:**
-- [x] 5 tài liệu công khai, không có dữ liệu cá nhân, đăng nhập hoặc nội dung nội bộ.
+- [x] 10 tài liệu công khai, không có dữ liệu cá nhân, đăng nhập hoặc nội dung nội bộ.
 - [x] Mỗi file có `doc_id`, `title`, `source_url`, `retrieved_at`, `document_version`, `audience`, `category`, `language`.
-- [x] `sources.csv` khớp 1-1 với 5 file Markdown.
+- [x] `sources.csv` khớp 1-1 với 10 file Markdown.
 - [x] Corpus có đủ `buyer`, `seller` và `both` để metadata filter có ý nghĩa.
 
 ### Cấu trúc Metadata
