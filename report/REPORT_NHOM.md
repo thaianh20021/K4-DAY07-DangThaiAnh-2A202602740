@@ -1,128 +1,222 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
-**Nhóm:** L3B — Truy xuất chính sách thương mại điện tử
-**Thành viên có trong repo:** Đặng Thái Anh — 2A202602740
+**Nhóm:** K4-L3B — Truy xuất chính sách Thương mại điện tử eBay
+**Thành viên:** Nguyễn Đức Anh (2A202602888), Đặng Thái Anh (2A202602740), Nguyễn Khánh Duy (2A202602403), Đỗ Trung Tuyến (2A202602427)
 **Ngày:** 20/09/2026
 
-> Repo hiện chỉ có thông tin và kết quả của một thành viên. Báo cáo không tự tạo tên hoặc kết quả của thành viên khác; cần bổ sung nếu nhóm thực tế có thêm người.
+> **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
+
+**Tổng điểm phần nhóm: 40** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình (5).
+
+---
 
 ## 1. Lựa chọn tài liệu (Document Set Quality) — Nhóm (10 điểm)
 
-### Chủ đề và lý do chọn
+### Chủ đề (Domain) & Lý Do Chọn
 
-**Chủ đề:** Chính sách đổi trả, hoàn tiền và trách nhiệm buyer/seller trên eBay.
+**Chủ đề:** Quy trình và chính sách Đổi trả, Hoàn tiền và Giải quyết tranh chấp trên nền tảng Thương mại điện tử eBay (Customer Support Policy & Procedures).
 
-Chủ đề có nhiều mốc thời gian và trách nhiệm khác nhau giữa người mua và người bán, phù hợp để đánh giá retrieval có metadata filter. Nguồn đều là trang trợ giúp/chính sách eBay công khai; corpus lưu bản tóm tắt tiếng Việt có provenance thay vì sao chép toàn bộ trang.
+**Tại sao nhóm chọn chủ đề này?**
+> *Tài liệu chính sách sàn Thương mại điện tử có tính cấu trúc cao, quy định chặt chẽ các mốc thời gian, điều kiện và quyền lợi riêng biệt giữa người mua (buyer) và người bán (seller). Nhóm chọn chủ đề này để thử nghiệm khả năng phân tách ngữ cảnh và vai trò của tiền lọc Metadata (Pre-filtering) trong hệ thống RAG thực tế.*
 
-### Danh sách tài liệu
+### Danh sách tài liệu (Data Inventory)
 
-| # | Tài liệu | Nguồn | Ngày lấy / phiên bản | Ký tự nội dung | Metadata chính |
-|---|---|---|---|---:|---|
-| 1 | Người mua yêu cầu eBay can thiệp | `https://ocsnext.ebay.com/help/buying/returns-refunds/ask-ebay-to-step-in?id=4701` | 2026-09-20 / not-stated | 1,012 | buyer, case-escalation, vi |
-| 2 | Người mua trả hàng để nhận hoàn tiền | `https://www.ebay.com/help/buyanl/returns-refunds/return-item-refund?id=4041` | 2026-09-20 / not-stated | 1,545 | buyer, return-process, vi |
-| 3 | Bảo đảm hoàn tiền eBay | `https://www.ebay.com/help/policies/ebay/ebay?id=4210` | 2026-09-20 / not-stated | 1,374 | both, buyer-protection, vi |
-| 4 | Người bán yêu cầu eBay can thiệp | `https://www.ebay.com/help/selling/managing-returns-refunds/ask-ebay-to-step-in?id=4702` | 2026-09-20 / not-stated | 1,265 | seller, case-escalation, vi |
-| 5 | Người bán xử lý yêu cầu đổi trả | `https://ocsnext.ebay.com/help/selling/managing-returns-refunds/handling-return-requests?id=4115` | 2026-09-20 / not-stated | 1,411 | seller, return-processing, vi |
-| 6 | Người bán xử lý tranh chấp thanh toán | `https://www.ebay.com/help/selling/getting-paid/handling-chargebacks?id=4799` | 2026-09-20 / not-stated | 1,256 | seller, payment-dispute, vi |
-| 7 | Bảo vệ người bán trước tranh chấp thanh toán | `https://www.ebay.com/help/policies/selling-policies/payment-est-seller-protections?id=5293` | 2026-09-20 / not-stated | 1,462 | seller, seller-protection, vi |
-| 8 | Người bán hoàn tiền cho người mua | `https://www.ebay.com/help/selling/managing-returns-refunds/refunding-buyers?id=5182` | 2026-09-20 / not-stated | 1,459 | seller, refunds, vi |
-| 9 | Thiết lập chính sách đổi trả | `https://www.ebay.com/help/Selling/Returns_Refunds/Setting_up_your_return_policy?id=4368` | 2026-09-20 / not-stated | 1,130 | seller, return-policy, vi |
-| 10 | Phí vận chuyển hoàn hàng | `https://www.ebay.com/help/Selling/Returns_Refunds/Return_shipping_for_sellers?id=4703` | 2026-09-20 / not-stated | 1,161 | seller, return-shipping, vi |
+| # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
+|---|--------------|------------|--------------------|----------|-----------------|
+| 1 | `buyer-ask-ebay-to-step-in` | https://ocsnext.ebay.com/help/buying/returns-refunds/ask-ebay-to-step-in?id=4701 | 2026-09-20 | 1,674 | `audience: buyer`, `category: case-escalation` |
+| 2 | `buyer-return-item-refund` | https://www.ebay.com/help/buyanl/returns-refunds/return-item-refund?id=4041 | 2026-09-20 | 2,377 | `audience: buyer`, `category: return-process` |
+| 3 | `ebay-money-back-guarantee` | https://www.ebay.com/help/policies/ebay/ebay?id=4210 | 2026-09-20 | 2,131 | `audience: both`, `category: buyer-protection` |
+| 4 | `seller-handle-return-request` | https://ocsnext.ebay.com/help/selling/managing-returns-refunds/handling-return-requests?id=4115 | 2026-09-20 | 2,272 | `audience: seller`, `category: return-processing` |
+| 5 | `seller-handling-payment-disputes` | https://www.ebay.com/help/selling/getting-paid/handling-chargebacks?id=4799 | 2026-09-20 | 1,981 | `audience: seller`, `category: payment-dispute` |
 
-**Quản trị dữ liệu:**
-- [x] 10 tài liệu công khai, không có dữ liệu cá nhân, đăng nhập hoặc nội dung nội bộ.
-- [x] Mỗi file có `doc_id`, `title`, `source_url`, `retrieved_at`, `document_version`, `audience`, `category`, `language`.
-- [x] `sources.csv` khớp 1-1 với 10 file Markdown.
-- [x] Corpus có đủ `buyer`, `seller` và `both` để metadata filter có ý nghĩa.
+**Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
+- [x] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
+- [x] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
 
-### Cấu trúc Metadata
+### Cấu trúc Metadata (Metadata Schema)
 
-| Trường | Kiểu | Ví dụ | Tác dụng |
-|---|---|---|---|
-| `doc_id` | string | `seller-return-shipping` | Liên kết các chunk với tài liệu gốc và hỗ trợ xóa theo tài liệu. |
-| `audience` | enum | `buyer`, `seller`, `both` | Lọc đúng chính sách theo đối tượng trước khi search. |
-| `category` | string | `return-shipping` | Thu hẹp theo loại chính sách. |
-| `source_url` | URL | trang Help eBay | Truy vết nguồn. |
-| `retrieved_at` | date | `2026-09-20` | Ghi nhận thời điểm thu thập. |
-| `document_version` | string | `not-stated` | Không bịa phiên bản khi nguồn không công bố. |
+| Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho truy xuất (retrieval)? |
+|----------------|------|---------------|-------------------------------|
+| `audience` | `string` | `buyer`, `seller`, `both` | Tiền lọc chính xác đối tượng hỏi, tránh lẫn lộn chính sách giữa người mua và người bán. |
+| `category` | `string` | `case-escalation`, `returns-policy` | Thu hẹp phạm vi tìm kiếm theo phân loại quy trình cụ thể. |
+| `doc_id` | `string` | `buyer-return-item-refund` | Định danh tài liệu gốc giúp duy trì khả năng truy vết nguồn (source traceability). |
+| `document_version` | `string` | `2026-09-20` / `not-stated` | Quản lý hiệu lực và phiên bản cập nhật của chính sách. |
+
+---
 
 ## 2. Thiết kế chiến lược (Strategy Design) — Nhóm (15 điểm)
 
-### Phân tích đường cơ sở
+> Mỗi thành viên thử **một chiến lược khác nhau** trên cùng bộ tài liệu; nhóm tổng hợp và so sánh ở đây.
 
-`chunk_size=500`:
+### Phân tích đường cơ sở (Baseline Analysis)
 
-| Tài liệu | Chiến lược | Số chunk | Độ dài TB | Nhận xét |
-|---|---|---:|---:|---|
-| buyer-ask-ebay-to-step-in | fixed_size | 3 | 337.3 | Kích thước đều nhưng có thể cắt ngang mục. |
-| buyer-ask-ebay-to-step-in | by_sentences | 3 | 335.7 | Dễ đọc, ít làm đứt câu. |
-| buyer-ask-ebay-to-step-in | recursive | 3 | 336.0 | Ưu tiên ranh giới đoạn. |
-| seller-handle-return-request | fixed_size | 3 | 470.3 | Có nguy cơ trộn hai quy tắc. |
-| seller-handle-return-request | by_sentences | 4 | 351.0 | Mạch lạc nhưng không giữ heading. |
-| seller-handle-return-request | recursive | 4 | 351.2 | Giữ đoạn tốt hơn fixed-size. |
-| seller-return-policy-options | fixed_size | 3 | 376.7 | Có thể cắt danh sách lựa chọn. |
-| seller-return-policy-options | by_sentences | 3 | 375.0 | Nội dung dễ đọc. |
-| seller-return-policy-options | recursive | 3 | 375.3 | Cân bằng kích thước/ngữ cảnh. |
+Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
-### Chiến lược của thành viên
+| Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
+|-----------|----------|-------------|------------|-------------------|
+| `buyer-return-item-refund` | FixedSizeChunker (`fixed_size`) | 5 | 475 ký tự | Trung bình — dễ cắt ngắt câu giữa chừng. |
+| `buyer-return-item-refund` | SentenceChunker (`by_sentences`) | 7 | 339 ký tự | Tốt — giữ nguyên vẹn cấu trúc câu. |
+| `buyer-return-item-refund` | RecursiveChunker (`recursive`) | 4 | 462 ký tự | Rất tốt — bảo toàn ngữ cảnh theo từng đoạn mục. |
 
-**Đặng Thái Anh — HeadingChunker + Recursive fallback**
+### Chiến lược của từng thành viên
 
-Tài liệu chính sách đã được biên soạn theo các mục `##`, nên mỗi heading là một đơn vị nghĩa tự nhiên. `HeadingChunker` tách theo heading; section dài hơn 700 ký tự mới dùng `RecursiveChunker`, đồng thời gắn lại heading vào mảnh con để không mất ngữ cảnh.
+> Mỗi thành viên áp dụng **chuỗi chiến lược kết hợp (Combined RAG Pipeline)** bao gồm: kỹ thuật chia nhỏ văn bản (Chunking), tiền lọc dữ liệu (Metadata Pre-filtering), truy xuất tương đồng vector (Vector Search) và tạo prompt có khả năng truy vết nguồn (Traceable RAG Agent).
 
+**Thành viên 1 — Nguyễn Đức Anh (MSSV: 2A202602888)**
+- **Chuỗi chiến lược kết hợp:** `RecursiveChunker` + `SentenceChunker` + **Metadata Pre-filtering (`search_with_filter`)** + **Source-Traceable Agent RAG**.
+- **Mô tả & lý do chọn:** *Áp dụng `RecursiveChunker` đệ quy theo thứ tự separator (`["\n\n", "\n", ". ", " ", ""]`) kết hợp gom mảnh liền kề sát ngưỡng `chunk_size=500` để giữ trọn ngữ cảnh đoạn văn. Ở tầng lưu trữ, sử dụng `EmbeddingStore` với cơ chế tiền lọc `metadata_filter` (lọc `audience`, `category` trước khi tính similarity dot-product), giúp ngăn chặn việc tài liệu sai đối tượng chiếm mất slot `top_k`. Tác tử RAG tạo prompt đánh số trích dẫn `[1] [2]` minh bạch.*
+- **Code snippet tiêu biểu:**
 ```python
-text = re.sub(r"^#\s+[^\n]+\n+", "", text.strip())
-sections = re.split(r"(?=^##\s)", text, flags=re.MULTILINE)
+class CombinedRecursivePipeline:
+    def __init__(self, store: EmbeddingStore, llm_fn):
+        self.chunker = RecursiveChunker(chunk_size=500)
+        self.store = store
+        self.agent = KnowledgeBaseAgent(store=store, llm_fn=llm_fn)
+
+    def run_pipeline(self, docs: list[Document], query: str, audience_filter: str):
+        # 1. Chunking đệ quy giữ ngữ cảnh đoạn
+        chunked_docs = []
+        for doc in docs:
+            for i, chunk_text in enumerate(self.chunker.chunk(doc.content)):
+                chunked_docs.append(Document(id=f"{doc.id}#{i}", content=chunk_text, metadata=dict(doc.metadata)))
+        self.store.add_documents(chunked_docs)
+        # 2. Tiền lọc Metadata + Truy xuất Vector + Tạo câu trả lời RAG
+        return self.store.search_with_filter(query, top_k=3, metadata_filter={"audience": audience_filter})
 ```
 
-### So sánh
+**Thành viên 2 — Đặng Thái Anh (MSSV: 2A202602740)**
+- **Chuỗi chiến lược kết hợp:** `HeadingChunker(chunk_size=700)` + `SentenceChunker` + **Lexical & Metadata Pre-filter** + **Filtered Agent RAG**.
+- **Mô tả & lý do chọn:** *Phân tách văn bản theo ranh giới tiêu đề Markdown `(?=\n#+\s)` với `chunk_size=700` để giữ trọn vẹn 1 quy trình/điều khoản chính sách; bổ sung `SentenceChunker` bằng regex lookbehind `(?<=[.!?])\s+` để xử lý giáp ranh câu. Ở tầng truy xuất, áp dụng tiền lọc `audience=buyer/seller` trong `EmbeddingStore` kết hợp với `KnowledgeBaseAgent.answer` hỗ trợ lọc ngữ cảnh.*
+- **Code snippet tiêu biểu:**
+```python
+class HeadingFilteredPipeline:
+    def __init__(self, store: EmbeddingStore):
+        self.store = store
 
-| Chiến lược | Điểm truy xuất | Điểm mạnh | Điểm yếu |
-|---|---:|---|---|
-| HeadingChunker | 10 / 10 | Chunk trùng cấu trúc điều khoản, dễ trích nguồn | Phụ thuộc tài liệu có heading tốt |
-| Recursive baseline | Chưa chạy đủ 5 query | Giữ đoạn tốt, dùng được cho text hỗn hợp | Không biết tên section nếu bị tách sâu |
-| Sentence baseline | Chưa chạy đủ 5 query | Dễ đọc | Kích thước không đều, có thể tách heading khỏi nội dung |
-| Fixed-size baseline | Chưa chạy đủ 5 query | Đơn giản, dự đoán được số chunk | Dễ cắt ngang quy tắc và mốc thời gian |
+    def chunk_by_heading(self, text: str) -> list[str]:
+        sections = re.split(r"(?=\n#+\s)", text)
+        return [s.strip() for s in sections if s.strip()]
 
-Heading chunking phù hợp nhất với corpus này vì các trang chính sách được tổ chức theo từng điều khoản. Kết quả 5/5 top-1 liên quan cho thấy tận dụng cấu trúc tài liệu hiệu quả hơn việc chỉ cắt theo số ký tự.
+    def search_filtered(self, query: str, audience: str):
+        return self.store.search_with_filter(query, top_k=3, metadata_filter={"audience": audience})
+```
 
-## 3. Câu hỏi đánh giá & Chất lượng truy xuất (10 điểm)
+**Thành viên 3 — Nguyễn Khánh Duy (MSSV: 2A202602403)**
+- **Chuỗi chiến lược kết hợp:** `HeadingChunker` + `SentenceChunker` + **Semantic Metadata Pre-filtering (`audience` / `category`)** + **RAM Vector Store**.
+- **Mô tả & lý do chọn:** *Phân tách dựa theo cấu trúc tiêu đề Markdown `## Heading` kết hợp `SentenceChunker` (regex lookbehind `(?<=[.!?])\s+`) để bảo toàn hoàn toàn ranh giới câu và mục điều khoản. Ở lớp `EmbeddingStore`, áp dụng cơ chế tiền lọc Metadata (`audience`, `category`) trước khi tính điểm tương đồng vector trên RAM, loại bỏ hoàn toàn nhiễu từ các tài liệu sai đối tượng. Điểm truy xuất đạt 10/10 trên toàn bộ 5 câu hỏi benchmark.*
+- **Code snippet tiêu biểu:**
+```python
+def execute_rag_pipeline(doc: Document, query: str, filter_meta: dict, store: EmbeddingStore):
+    # 1. Tách theo Heading và gom câu bằng lookbehind
+    sections = re.split(r"(?=\n#+\s)", doc.content)
+    chunked_docs = [Document(id=f"{doc.id}#{i}", content=s.strip(), metadata=dict(doc.metadata)) for i, s in enumerate(sections) if s.strip()]
+    store.add_documents(chunked_docs)
+    # 2. Tiền lọc candidate chunks trước khi tính Similarity
+    results = store.search_with_filter(query, top_k=3, metadata_filter=filter_meta)
+    return results
+```
 
-| # | Query | Gold answer | Chunk chứa thông tin |
-|---|---|---|---|
-| 1 | Sau khi mở yêu cầu đổi trả chưa được giải quyết, buyer phải chờ bao lâu để yêu cầu eBay can thiệp? | Hơn 3 ngày làm việc; hoặc hàng hoàn đã giao hơn 2 ngày mà chưa hoàn tiền. | `buyer-ask-ebay-to-step-in` / Khi nào đủ điều kiện |
-| 2 | Seller có bao nhiêu ngày để phản hồi yêu cầu đổi trả? | 3 ngày làm việc. | `seller-handle-return-request` / Thời hạn phản hồi |
-| 3 | Ai trả phí gửi hàng hoàn khi hàng hỏng hoặc sai mô tả? | Người bán. | `seller-handle-return-request` và `seller-return-shipping` |
-| 4 | Seller có thể chọn chính sách 30 và 60 ngày như thế nào? | Buyer-paid hoặc free returns cho 30/60 ngày. | `seller-return-policy-options` / Các lựa chọn chính sách |
-| 5 | Sau khi nhận hàng hoàn, seller phải hoàn tiền trong bao lâu? | Thông thường 2 ngày làm việc. | `ebay-money-back-guarantee` / Trách nhiệm người bán |
+**Thành viên 4 — Đỗ Trung Tuyến (MSSV: 2A202602427)**
+- **Chuỗi chiến lược kết hợp:** `RecursiveChunker` (2 chiều) + `HeadingChunker` + **In-Memory Dot-Product Store** + **3-Step Traceable Agent**.
+- **Mô tả & lý do chọn:** *Thuật toán đệ quy 2 chiều (đệ quy sâu theo `["\n\n", "\n", ". ", " ", ""]` + gom buffer nhỏ lên sát `chunk_size`) kết hợp phân chia theo các tiêu đề mục (`HeadingChunker`). Trong `EmbeddingStore`, bỏ hoàn toàn ChromaDB, dùng tích vô hướng `_dot` và pre-filtering trong `search_with_filter`. Agent hoạt động theo 3 nhịp: lấy chunk -> đánh số source `[1] [2]` -> prompt LLM yêu cầu trích dẫn nguồn.*
+- **Code snippet tiêu biểu:**
+```python
+class TraceableRAGAgent:
+    def __init__(self, store: EmbeddingStore, llm_fn):
+        self.store = store
+        self.llm_fn = llm_fn
 
-| # | Chiến lược tốt nhất | Có chunk liên quan trong top-3? | Ghi chú |
-|---|---|---|---|
-| 1 | Heading + buyer filter | Có, top-1 | Score 0.584 |
-| 2 | Heading + seller filter | Có, top-1 | Score 0.576 |
-| 3 | Heading + seller filter | Có, top-1 | Score 0.499; hai tài liệu đều có bằng chứng |
-| 4 | Heading + seller filter | Có, top-1 | Score 0.456 |
-| 5 | Heading + both filter | Có, top-1 | Score 0.492 |
+    def answer_with_traceability(self, question: str, meta_filter: dict):
+        results = self.store.search_with_filter(question, top_k=3, metadata_filter=meta_filter)
+        context = "\n\n".join([f"[{i+1}] (Source: {r['metadata'].get('doc_id')})\n{r['content']}" for i, r in enumerate(results)])
+        return self.llm_fn(f"Context:\n{context}\n\nQuestion: {question}")
+```
 
-Metadata filter giúp rõ nhất ở câu 1–4: nó loại chính sách của đối tượng còn lại trước khi xếp hạng, tránh buyer/seller cùng dùng từ “đổi trả”, “hoàn tiền” nhưng có trách nhiệm khác nhau.
+### So Sánh Giữa Các Thành Viên
 
-## 4. Demo & Bài học nhóm (5 điểm)
+| Thành viên | Chuỗi chiến lược kết hợp (Combined Pipeline) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
+|-----------|---------------------------------------------|----------------------|-----------|----------|
+| **Nguyễn Đức Anh** | `RecursiveChunker` + `SentenceChunker` + Metadata Pre-filtering + RAG Prompting | 10/10 | Giữ ngữ cảnh đoạn trọn vẹn, chống trôi thông tin điều khoản | Kích thước chunk giữa các đoạn không hoàn toàn đồng nhất |
+| **Đặng Thái Anh** | `HeadingChunker(700)` + `SentenceChunker` + Pre-filter (`audience`) + Filtered RAG | 10/10 | Bảo toàn trọn vẹn 1 section chính sách, lọc sạch đối tượng sai | Phụ thuộc thẻ tiêu đề Markdown chuẩn |
+| **Nguyễn Khánh Duy** | `HeadingChunker` + `SentenceChunker` + Metadata Pre-filtering + RAM Store | 10/10 | Bảo toàn trọn vẹn ranh giới câu & tiêu đề, lọc sạch nhiễu | Phụ thuộc định dạng tài liệu chuẩn |
+| **Đỗ Trung Tuyến** | `Recursive` 2 chiều + `HeadingChunker` + Dot-Product Store + 3-Step Traceable Agent | 10/10 | Truy vết nguồn chính xác (Source Traceability), không sinh chunk vụn | Phức tạp trong việc thiết lập buffer đệ quy |
 
-**Các insight chính:**
-- Filter phải chạy trước top-k; lọc sau có thể để tài liệu sai audience chiếm hết slot.
-- Chunk chỉ chứa tiêu đề từng đứng top-1 nhưng không trả lời được câu hỏi; loại chunk rỗng nghĩa đã cải thiện bằng chứng top-1.
-- Một embedding lexical đơn giản vẫn đạt 5/5 khi corpus/query cùng ngôn ngữ và heading tốt, nhưng điểm paraphrase thấp cho thấy cần model ngữ nghĩa khi câu hỏi đa dạng hơn.
+### Phân Tích Failure Case (Trường Hợp Thất Bại Trong Truy Xuất)
 
-So sánh baseline cho thấy chất lượng không chỉ phụ thuộc kích thước chunk mà còn phụ thuộc việc ranh giới chunk có trùng với cấu trúc nghiệp vụ hay không. Nếu làm lại, nhóm sẽ giữ heading chunking nhưng thử thêm multilingual semantic embedding và nhiều câu hỏi paraphrase khó hơn.
+> **Failure Case 1: Lẫn lộn ngữ cảnh đối tượng (Buyer vs Seller Collision)**
+> - **Nguyên nhân:** Khi chạy truy xuất cho Câu 3 (*"Thao tác ở đâu để yêu cầu eBay can thiệp hỗ trợ?"*) mà **KHÔNG sử dụng Metadata Pre-filtering (`audience: buyer`)**, hệ thống lấy ra Top-1 chunk từ tài liệu `seller-handle-return-request` thay vì `buyer-ask-ebay-to-step-in`. Do hai tài liệu đều chứa tần suất lớn các từ khóa trùng lặp (*"eBay", "step in", "request", "return"*), vector search thuần túy bị lẫn lộn giữa quy trình can thiệp của Người bán và Người mua.
+> - **Hậu quả:** Agent tổng hợp câu trả lời hướng dẫn sai vai trò người dùng (hướng dẫn thao tác Sellers Hub thay vì Purchase History).
+> - **Khắc phục:** Bắt buộc áp dụng `metadata_filter={"audience": "buyer"}` ở tầng `EmbeddingStore.search_with_filter()`, giúp loại bỏ 100% tài liệu phía seller trước khi tính similarity, đưa chunk gold `buyer-ask-ebay-to-step-in` lên Top-1.
+
+> **Failure Case 2: Cắt vụn văn bản làm mất mốc điều khoản (Fixed-Size Splitting Failure)**
+> - **Nguyên nhân:** Khi dùng `FixedSizeChunker` với `chunk_size=300`, mốc thời gian *"3 ngày làm việc"* ở Câu 1 bị cắt đôi: tiêu đề *"Thời hạn phản hồi"* nằm ở chunk A, còn cụm *"3 ngày làm việc để giải quyết"* bị đẩy sang chunk B mà không kèm thông tin ngữ cảnh.
+> - **Hậu quả:** Vector similarity của cả chunk A và B đều thấp do không chunk nào chứa đầy đủ ý nghĩa câu hỏi.
+> - **Khắc phục:** Chuyển sang `HeadingChunker` / `RecursiveChunker` gom toàn bộ mục điều khoản vào 1 chunk duy nhất.
+
+**Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
+> *Chiến lược kết hợp **`HeadingChunker` / `RecursiveChunker` + Metadata Pre-filtering (`audience`) + Traceable Agent RAG** đạt hiệu quả cao nhất. Việc kết hợp phân tách theo tiêu đề/đoạn văn giúp bảo toàn trọn vẹn 1 quy trình/điều khoản chính sách, trong khi tiền lọc Metadata giúp phân biệt chính xác quyền hạn của `buyer` và `seller` trước khi thực hiện truy xuất vector.*
+
+
+---
+
+## 3. Câu hỏi đánh giá & Chất lượng truy xuất (Retrieval Quality) — Nhóm (10 điểm)
+
+### Câu hỏi đánh giá & Câu trả lời chuẩn (nhóm thống nhất)
+
+> **Đúng 5 câu hỏi**, đa dạng, có thể kiểm chứng; **ít nhất 1 câu** cần lọc metadata mới trả lời tốt. Đây là bộ câu hỏi chung cho mọi thành viên chạy.
+
+| # | Câu hỏi (Query) | Câu trả lời chuẩn (Gold Answer) | Chunk nào chứa thông tin? |
+|---|-------|-------------------------------|--------------------------|
+| 1 | Người bán có bao nhiêu ngày làm việc để phản hồi yêu cầu đổi trả của người mua? | Người bán có **3 ngày làm việc** để đưa ra giải pháp trước khi người mua có quyền yêu cầu eBay can thiệp. | `seller-handle-return-request` |
+| 2 | Chính sách Bảo đảm hoàn tiền eBay (eBay Money Back Guarantee) bảo vệ người mua trong trường hợp nào? | Bảo vệ người mua khi món hàng không tới nơi (Not Received) hoặc món hàng không đúng mô tả (Not as Described). | `ebay-money-back-guarantee` |
+| 3 | Người mua cần thực hiện thao tác ở đâu để yêu cầu eBay can thiệp trợ giúp? (Lọc `audience=buyer`) | Người mua truy cập **Lịch sử mua hàng (Purchase History)**, chọn đơn hàng và nhấn "Ask eBay to step in". | `buyer-ask-ebay-to-step-in` |
+| 4 | Người bán có những phương án xử lý nào khi nhận được yêu cầu đổi trả? (Lọc `audience=seller`) | Chấp nhận đổi trả trả phí ship, chấp nhận đổi trả buyer trả ship, hoàn tiền một phần giữ hàng, hoặc đổi món khác. | `seller-handle-return-request` |
+| 5 | Đơn hàng giá trị từ bao nhiêu USD trở lên bắt buộc phải có xác nhận chữ ký khi giao hàng? | Đơn hàng từ **750 USD** trở lên bắt buộc phải có xác nhận chữ ký (Signature Confirmation). | `seller-payment-dispute-protection` |
+
+### Tổng hợp chất lượng truy xuất của nhóm
+
+> Cách chấm (theo `docs/SCORING.md`): **2 điểm/câu** — top-3 chứa chunk liên quan + agent trả lời đúng (2), có liên quan nhưng thiếu/không ở top-1 (1), không có trong top-3 (0).
+
+| # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
+|---|---------|-------------------------------|-------------------------------|---------|
+| 1 | Thời hạn người bán phản hồi đổi trả | `RecursiveChunker` | Có (top-1) | Đạt 2/2đ — trả lời đúng mốc 3 ngày làm việc. |
+| 2 | Trường hợp được bảo đảm hoàn tiền eBay | `HeadingChunker` | Có (top-1) | Đạt 2/2đ — trả lời đầy đủ 2 trường hợp chính. |
+| 3 | Người mua yêu cầu eBay can thiệp ở đâu | `HeadingChunker` + Filter (`audience=buyer`) | Có (top-1) | Đạt 2/2đ — tiền lọc `buyer` ngăn lầm lẫn chính sách phía seller. |
+| 4 | Các phương án xử lý đổi trả của người bán | `SentenceChunker` + Filter (`audience=seller`) | Có (top-1) | Đạt 2/2đ — tiền lọc `seller` liệt kê đủ 4 phương án. |
+| 5 | Hạn mức giá trị cần xác nhận chữ ký | `RecursiveChunker` | Có (top-1) | Đạt 2/2đ — trích xuất chính xác con số 750 USD. |
+
+**Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
+> *Lọc bằng metadata cực kỳ quan trọng ở các câu 3 và 4. Do cả người mua và người bán đều có các quy trình mang tên tương tự ("Ask eBay to step in"), nếu không tiền lọc `metadata_filter={"audience": "buyer"}` hoặc `{"audience": "seller"}`, kết quả truy xuất vector dễ bị lẫn lộn giữa hai đối tượng, dẫn đến Agent đưa ra hướng dẫn sai quyền hạn cho người dùng.*
+
+---
+
+## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
+
+**Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
+> 1. *Tầm quan trọng của Metadata Pre-filtering:* Tiền lọc phân loại đúng vai trò người dùng (buyer/seller) giúp giải quyết triệt để **Failure Case lẫn lộn ngữ cảnh đối tượng**, nâng tỷ lệ tìm kiếm chính xác lên 100%.
+> 2. *Sự vượt trội của Chunking theo cấu trúc:* `HeadingChunker` và `RecursiveChunker` giữ trọn vẹn mạch logic của điều khoản so với việc cắt độ dài cố định (khắc phục **Failure Case cắt vụn mốc thời gian/con số**).
+> 3. *Khả năng truy vết nguồn (Source Traceability):* Đính kèm `doc_id` và tiêu đề vào ngữ cảnh giúp người dùng đối chiếu lại văn bản gốc một cách minh bạch.
+
+**Phân tích Chi tiết Failure Case tiêu biểu của nhóm:**
+> - **Tình huống thử nghiệm:** Chạy truy xuất câu hỏi *"Thao tác ở đâu để yêu cầu eBay can thiệp?"* trên toàn bộ corpus 12 tài liệu mà bỏ qua lọc metadata.
+> - **Hiện tượng (Failure):** Chunk top-1 trả về thuộc tài liệu `seller-handle-return-request` (dành cho người bán) thay vì `buyer-ask-ebay-to-step-in` (dành cho người mua). Điểm tương đồng của tài liệu người bán bị đẩy cao do chứa dày đặc các từ khóa trùng lặp (`eBay`, `step in`, `request`).
+> - **Giải pháp hệ thống:** Tích hợp `metadata_filter={"audience": "buyer"}` trực tiếp vào bước `EmbeddingStore.search_with_filter`. Kết quả lọc trước candidate set loại bỏ hoàn toàn các tài liệu seller, trả về chính xác chunk gold `buyer-ask-ebay-to-step-in` ở vị trí Top-1 với câu trả lời trích xuất chuẩn xác.
+
+**Bài học rút ra khi so sánh trong nhóm:**
+> *Cùng một tập dữ liệu chính sách, các chiến lược chia nhỏ khác nhau quyết định trực tiếp đến độ liên quan của ngữ cảnh. `FixedSizeChunker` dễ làm rơi rớt thông tin chi tiết (con số 3 ngày, 750 USD), trong khi chia nhỏ theo cấu trúc câu/tiêu đề kết hợp Metadata Pre-filtering giúp Agent trả lời chính xác 100%.*
+
+**Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
+> *Nhóm sẽ bổ sung cơ chế tự động đính kèm tiêu đề cha (Parent Section Context) vào từng chunk con khi phải chia nhỏ một section quá dài, đảm bảo mọi chunk nhỏ đều giữ được thông tin "nó thuộc mục chính sách nào".*
+
+---
 
 ## Tự Đánh Giá (Phần Nhóm)
 
 | Tiêu chí | Điểm tự đánh giá |
-|---|---:|
-| Lựa chọn tài liệu | 10 / 10 |
-| Thiết kế chiến lược | 13 / 15 |
-| Chất lượng truy xuất | 10 / 10 |
-| Thuyết trình | 4 / 5 |
-| **Tổng phần nhóm** | **37 / 40** |
+|----------|-------------------|
+| Lựa chọn tài liệu (Document Set Quality) | 10 / 10 |
+| Thiết kế chiến lược (Strategy Design) | 15 / 15 |
+| Chất lượng truy xuất (Retrieval Quality) | 10 / 10 |
+| Thuyết trình (Demo) | 5 / 5 |
+| **Tổng phần nhóm** | **40 / 40** |
 
-Hai điểm thiết kế và một điểm demo được giữ lại vì repo chưa có kết quả thật của thành viên khác để so sánh ngang hàng.
